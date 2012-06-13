@@ -1,31 +1,115 @@
 #!/usr/bin/env ruby
-if ARGV.size > 4 || ARGV[0] == "--help" || ARGV[0] == "-h" || ARGV[0] == "-?"
-  puts "usage: #{File.basename($0)} [-e <environment>] [--war [<path/to/warfile>]]"
-  puts "\tdefault environment: development"
-  exit 1
-end
+# if ARGV.size > 4 || ARGV[0] == "--help" || ARGV[0] == "-h" || ARGV[0] == "-?"
+#   puts "usage: #{File.basename($0)} [-e <environment>] [--war [<path/to/warfile>]]"
+#   puts "\tdefault environment: development"
+#   exit 1
+# end
 
-args = [__FILE__.gsub(/-/, ':').gsub(/.*[\/\\]/, '')]
-if ARGV.size == 2 && ARGV[0] == "-e"
-  args << "-Drails.env=#{ARGV[1]}"
-  args << "-Prun"
-elsif ARGV.size == 1 && ARGV[0] == "--war"
-  args = ["jetty:run-war", "-Pwar"]
-elsif ARGV.size == 2 && ARGV[0] == "--war"
-  args = ["jetty:deploy-war", "-DwebApp=#{ARGV[1]}", "-Pwar"]
-elsif ARGV.size == 3 && ARGV[0] == "-e" && ARGV[2] == "--war"
-   args = ["jetty:run-war", "-Pwar", "-Drails.env=#{ARGV[1]}"]
-elsif ARGV.size == 3 && ARGV[1] == "-e" && ARGV[0] == "--war"
-   args = ["jetty:run-war", "-Pwar", "-Drails.env=#{ARGV[2]}"]
-elsif ARGV.size == 4 && ARGV[0] == "-e" && ARGV[2] == "--war"
-   args = ["jetty:deploy-war", "-Pwar",  "-DwebApp=#{ARGV[3]}", "-Drails.env=#{ARGV[1]}"]
-elsif ARGV.size == 4 && ARGV[2] == "-e" && ARGV[0] == "--war"
-   args = ["jetty:deploy-war", "-Pwar",  "-DwebApp=#{ARGV[1]}", "-Drails.env=#{ARGV[3]}"]
+# args = [__FILE__.gsub(/-/, ':').gsub(/.*[\/\\]/, '')]
+# if ARGV.size == 2 && ARGV[0] == "-e"
+#   args << "-Drails.env=#{ARGV[1]}"
+#   args << "-Prun"
+# elsif ARGV.size == 1 && ARGV[0] == "--war"
+#   args = ["jetty:run-war", "-Pwar"]
+# elsif ARGV.size == 2 && ARGV[0] == "--war"
+#   args = ["jetty:deploy-war", "-DwebApp=#{ARGV[1]}", "-Pwar"]
+# elsif ARGV.size == 3 && ARGV[0] == "-e" && ARGV[2] == "--war"
+#    args = ["jetty:run-war", "-Pwar", "-Drails.env=#{ARGV[1]}"]
+# elsif ARGV.size == 3 && ARGV[1] == "-e" && ARGV[0] == "--war"
+#    args = ["jetty:run-war", "-Pwar", "-Drails.env=#{ARGV[2]}"]
+# elsif ARGV.size == 4 && ARGV[0] == "-e" && ARGV[2] == "--war"
+#    args = ["jetty:deploy-war", "-Pwar",  "-DwebApp=#{ARGV[3]}", "-Drails.env=#{ARGV[1]}"]
+# elsif ARGV.size == 4 && ARGV[2] == "-e" && ARGV[0] == "--war"
+#    args = ["jetty:deploy-war", "-Pwar",  "-DwebApp=#{ARGV[1]}", "-Drails.env=#{ARGV[3]}"]
+# end
+# ARGV.replace(args)
+# if !File.exists?(File.join('config', 'web.xml')) && !File.exists?(File.join('src', 'main', 'webapp', 'WEB-INF', 'web.xml'))
+#   require 'fileutils'
+#   web_xml = Gem.find_files( 'maven/jetty/web.xml').first
+#   FileUtils.cp(web_xml, 'config')
+# end
+# load Gem.bin_path('ruby-maven', 'rmvn')
+
+
+require 'maven/jetty/ruby_maven'
+require 'thor'
+
+class JettyCommand < Thor
+  no_tasks do
+    def mvn
+      @mvn ||= Maven::Jetty::RubyMaven.new
+    end
+    
+    def exec(*args)
+      ARGV.clear # clean up in case another script gets executed
+      mvn.exec(args)
+    end
+  end
+
+  desc "[run]", "runs jetty with a rails filesystem layout"
+  method_option :environment, :aliases => '-e', :type => :string, :required => false, :desc => 'rails environment'
+  method_option :port, :type => :numeric, :default => 8080, :desc => 'http port'
+  method_option :sslport, :type => :numeric, :default => 8443, :desc => 'https port'
+  def server(*args)
+    args = ARGV.dup
+    args.delete('server')
+    if i = args.index("--")
+      maven_args = args[i..-1]
+    end
+    maven_args ||= []
+    maven_args << "-Drails.env=#{options[:environment]}" if options[:environment]
+    maven_args << "-Djetty.port=#{options[:port]}"
+    maven_args << "-Djetty.sslport=#{options[:sslport]}"
+    exec(*(["jetty:run", "-Prun"] + maven_args))
+  end
+
+  desc "war WARFILE", "runs jetty with a given warfile"
+  method_option :port, :type => :numeric, :default => 8080, :desc => 'http port'
+  method_option :sslport, :type => :numeric, :default => 8443, :desc => 'https port'
+  def war(file, *args)
+    args = ARGV.dup
+    if i = args.index("--")
+      maven_args = args[i..-1]
+    end
+    maven_args ||= []
+    maven_args << "-Djetty.war=#{file}"
+    maven_args << "-Djetty.port=#{options[:port]}"
+    maven_args << "-Djetty.sslport=#{options[:sslport]}"
+    exec(*(["jetty:deploy-war", "-Pwar"] + maven_args))
+  end
+
+  desc "pom", "dump the pom used into pom.xml"
+  method_option :force, :type => :boolean, :default => false, :desc => 'force to overwrite pom.xml'
+  def pom(*args)
+    if File.exists?('pom.xml') && !options[:force]
+      warn "abort. pom.xml already exist. use --force to overwrite"
+    else
+      mvn.dump_pom(options[:force])
+    end
+  end
+
+  def help(*args)
+    super(*args)
+    goal = 
+      case args[0]
+      when 'server'  
+        'run'
+      when 'war' 
+        'deploy-war'
+      end
+    if goal
+      puts
+      puts "Maven Options: (from jetty maven plugin)"
+      exec ["jetty:help", "-Ddetail=true", "-Dgoal=#{goal}"]
+    end
+  end
+
 end
-ARGV.replace(args)
-if !File.exists?(File.join('config', 'web.xml')) && !File.exists?(File.join('src', 'main', 'webapp', 'WEB-INF', 'web.xml'))
-  require 'fileutils'
-  web_xml = Gem.find_files( 'maven/jetty/web.xml').first
-  FileUtils.cp(web_xml, 'config')
+if i = ARGV.index('run')
+  ARGV[i] = 'server'
 end
-load Gem.bin_path('ruby-maven', 'rmvn')
+#p ARGV.detect {|a| p a ;a =~ /^[a-z]/ }
+unless ARGV[0] =~ /^[a-z]/
+  ARGV.insert(0, 'server')
+end
+JettyCommand.start
