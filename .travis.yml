@@ -1,0 +1,6 @@
+language: java
+install: echo 'skip install'
+script: mvn test -Djruby.versions=1.6.7.2
+jdk:
+  - openjdk6
+#  - openjdk7
