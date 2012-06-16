@@ -37,7 +37,7 @@ Then /^jetty runs$/ do
 
   succeeded = rmvn.exec_in(@target, '-Prun,integration,assets')
   unless succeeded
-    puts File.read('output.log')
+    puts File.read(File.join(@target, 'output.log'))
     raise 'failure' 
   end
 end
