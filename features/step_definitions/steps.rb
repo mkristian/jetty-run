@@ -36,7 +36,10 @@ Then /^jetty runs$/ do
   rmvn.options['-Dgem.path'] = ENV['GEM_PATH'] if ENV['GEM_PATH']
 
   succeeded = rmvn.exec_in(@target, '-Prun,integration,assets')
-  raise 'failure' unless succeeded
+  unless succeeded
+    puts File.read('output.log')
+    raise 'failure' 
+  end
 end
 
 Given /^application without Gemfile\.lock in "(.*)"$/ do |name|
