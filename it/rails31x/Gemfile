@@ -68,6 +68,6 @@ gem 'jquery-rails'
 # the javascript engine for execjs gem
 platforms :jruby do
   group :assets do
-    gem 'therubyrhino'
+    gem 'therubyrhino', '1.73.4'
   end
 end
