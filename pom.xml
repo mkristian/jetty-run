@@ -83,7 +83,7 @@
     <gem.path>${project.build.directory}/rubygems</gem.path>
     <jruby.18and19>true</jruby.18and19>
     <jruby.plugins.version>0.29.0</jruby.plugins.version>
-    <jruby.versions>1.6.5.1,1.6.7.2,1.7.0.preview1</jruby.versions>
+    <jruby.versions>1.6.7.2,1.7.0.preview1</jruby.versions>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
