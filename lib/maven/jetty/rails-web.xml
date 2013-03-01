@@ -16,7 +16,7 @@
   </context-param>
   <context-param>
     <param-name>jruby.compat.version</param-name>
-    <param-value>1.8</param-value>
+    <param-value>1.9</param-value>
   </context-param>
   <!-- for more config options see https://github.com/jruby/jruby-rack -->
 

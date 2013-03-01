@@ -1,0 +1,11 @@
+#-*- mode: ruby -*-
+
+jar("org.jruby.rack:jruby-rack", '1.1.13.1')
+jar("org.jruby:jruby-core", "${jruby.version}")
+
+# lock down versions
+properties['jruby.version'] = '1.7.2'
+properties['jruby.plugins.version'] = '0.29.3'
+properties['jetty.version'] = '8.1.9.v20130131'
+
+# vim: syntax=Ruby

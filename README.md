@@ -27,7 +27,7 @@ TODO more advanced example and current config
 
 ## running any given war-file ##
 
-    jetty-war war /path/to/war-file
+    jetty-run war /path/to/war-file
 
 with this you warble your warfile and use jetty-run to start it with jetty.
 
@@ -40,3 +40,8 @@ see
 # note #
 
 orginally the code was part the jruby-maven-plugins and slowly the functionality moved to the ruby side of things. so things are on the move and there is room for improvements . . .
+
+# meta-fu #
+
+bug-reports and pull request are most welcome.
+
