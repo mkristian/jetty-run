@@ -2,6 +2,13 @@
 
 packaging :pom # use pom packaging to avoid building war file on test run
 
+jar('org.jruby.rack:jruby-rack', '1.1.13.1').exclusions << 'org.jruby:jruby-complete'
+if defined?( JRUBY_VERSION ) && JRUBY_VERSION =~ /^1\.7\./
+  jar("org.jruby:jruby-core", "${jruby.version}")
+else
+  jar("org.jruby:jruby-complete", "${jruby.version}")
+end
+
 profile(:integration) do |t|
   t.build.default_goal 'verify'
 
@@ -14,4 +21,6 @@ profile(:integration) do |t|
   end
 end
 
+properties[ 'jruby.version' ] = '1.7.3'
+properties[ 'jetty.version' ] = '8.1.9.v20130131'
 # vim: syntax=Ruby

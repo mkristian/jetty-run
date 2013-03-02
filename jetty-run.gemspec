@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake', '0.9.2.2'
   s.add_development_dependency 'minitest', '~> 2.10.0'
   s.add_development_dependency 'cucumber', '~> 1.1.9'
-  s.add_runtime_dependency 'ruby-maven', '3.0.4.0.29.0'
+  s.add_runtime_dependency 'ruby-maven', '~> 3.0.4.1.4'
 end

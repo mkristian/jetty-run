@@ -22,13 +22,18 @@ module Maven
 XML
 
       public
-      
+
+      def initialize( dir = '.')
+        @dir = dir
+        super *[]
+      end
+
       def rails?( dir = '.' )
         File.exists? File.join( dir, 'config', 'application.rb' )
       end
 
       def connector_xml
-        if File.exists?( 'src/test/resources/server.keystore' )
+        if File.exists?( File.join( @dir, 'src', 'test','resources','server.keystore' ) )
           CONNECTOR_XML.sub( /..project.build.directory..jetty/, '${project.basedir}/src/test/resources' )
         else
           CONNECTOR_XML
@@ -36,11 +41,21 @@ XML
       end
 
       def web_xml
-        if File.exists?( File.join( 'config', 'web.xml' ) )
-          File.join( 'config', 'web.xml' )
-        elsif File.exists?('web.xml')
+        if File.exists?( File.join( @dir, 'config', 'web.xml' ) )
+          File.join( @dir, 'config', 'web.xml' )
+        elsif File.exists?( File.join( @dir, 'web.xml' ) )
           'web.xml'
         end
+      end
+
+      def load_gemfile(file)
+        super
+        file = file.path if file.is_a?(File)
+        if File.exists? file
+          gem 'bundler'
+          #plugin( :bundler, "${jruby.plugins.version}" ).execute_goal( :install )
+        end
+        super
       end
 
       def add_defaults
@@ -51,8 +66,10 @@ XML
           "jetty.sslport" => '8443'
         })
 
-        self.properties[ 'rails.env' ] = 'development' if rails?
+        self.properties[ 'rails.env' ] = 'development' if rails?( @dir )
 
+        plugin( :gem, "${jruby.plugins.version}" ).execute_goal( :initialize )
+        
         profile(:war).plugin("org.mortbay.jetty:jetty-maven-plugin",
                              "${jetty.version}")do |jetty|
             options = {
@@ -63,7 +80,7 @@ XML
         end
 
         profile(:run) do |run|
-          overrideDescriptor = rails? ? '${project.build.directory}/jetty/override-rails-${rails.env}-web.xml' : '${project.build.directory}/jetty/override-rack-web.xml'
+          overrideDescriptor = rails?( @dir ) ? '${project.build.directory}/jetty/override-rails-${rails.env}-web.xml' : '${project.build.directory}/jetty/override-rack-web.xml'
           run.activation.by_default
           run.plugin("org.mortbay.jetty:jetty-maven-plugin",
                        "${jetty.version}") do |jetty|

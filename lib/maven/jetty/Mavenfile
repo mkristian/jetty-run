@@ -1,7 +1,11 @@
 #-*- mode: ruby -*-
 
 jar("org.jruby.rack:jruby-rack", '1.1.13.1')
-jar("org.jruby:jruby-core", "${jruby.version}")
+if defined?( JRUBY_VERSION ) && JRUBY_VERSION =~ /^1\.7\./
+  jar("org.jruby:jruby-core", "${jruby.version}")
+else
+  jar("org.jruby:jruby-complete", "${jruby.version}")
+end
 
 # lock down versions
 properties['jruby.version'] = '1.7.2'

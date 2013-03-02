@@ -7,8 +7,7 @@ module Maven
     class PomMagic < Maven::Ruby::PomMagic
 
       def generate_pom( dir = '.', *args )
-
-        proj = JettyProject.new
+        proj = JettyProject.new( dir )
 
         ensure_web_xml( dir, proj )
         ensure_mavenfile( dir )
@@ -64,28 +63,6 @@ module Maven
           FileUtils.cp( store, target )
         end
       end
-
-      # def first_gemspec( dir = '.' )
-      #   gemspecs = Dir[ File.join( dir, "*.gemspec" ) ]
-      #   if gemspecs.size > 0
-      #     File.expand_path( gemspecs[ 0 ] )
-      #   end
-      # end
-
-      # def file( name, dir = '.' )
-      #   File.expand_path( File.join( dir, name ) )
-      # end
-
-      # def pom_xml( dir = '.', proj, args )
-      #   index = args.index( '-f' ) || args.index( '--file' )
-      #   name = args[ index + 1 ] if index
-      #   pom = File.join( dir, name || '.pom.xml' )
-      #   File.open(pom, 'w') do |f|
-      #     f.puts proj.to_xml
-      #   end
-      #   args += ['-f', pom] unless name
-      #   args
-      # end
 
     end
   end
