@@ -13,9 +13,6 @@ plugin(:cucumber) do |m|
   m.execute_goal(:test)
 end
 
-# hack until test profile deps are normal deps with scope 'test'
-#profile(:test).activation.by_default
-
 # just lock the versions
 properties['jruby.plugins.version'] = '0.29.4'
 properties['jruby.version'] = '1.7.3'
