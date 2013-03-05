@@ -2,7 +2,7 @@
 
 * [![Build Status](https://secure.travis-ci.org/mkristian/jetty-run.png)](http://travis-ci.org/mkristian/jetty-run)
 * [![Dependency Status](https://gemnasium.com/mkristian/jetty-run.png)](https://gemnasium.com/mkristian/jetty-run)
-* [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/mkristian/jetty-run)
+* [![Code Climate](https://codeclimate.com/github/mkristian/jetty-run.png)](https://codeclimate.com/github/mkristian/jetty-run)
 
 
 ## install ##
