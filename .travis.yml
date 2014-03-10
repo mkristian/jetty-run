@@ -1,6 +1,0 @@
-language: java
-install: echo 'skip install'
-#script: mvn test -Djruby.versions=1.6.7.2 -Dargs=-nrails-3.2.x
-jdk:
-  - openjdk6
-  - openjdk7
