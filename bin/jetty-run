@@ -1,70 +1,12 @@
 #!/usr/bin/env ruby
-require 'maven/jetty/cli'
-require 'thor'
+require 'rubygems'
+# ensure we use the right version
+gem 'ruby-maven', '>=3.1.0'
 
-class JettyCommand < Thor
-  no_tasks do
-    def mvn
-      @mvn ||= Maven::Jetty::Cli.new
-    end
-    
-    def exec(*args)
-      ARGV.clear # clean up in case another script gets executed
-      mvn.exec(args)
-    end
+require 'jetty_run/cli'
 
-    def maven_args
-      args = ARGV.dup
-      if i = args.index("--")
-        maven_args = args[i..-1]
-      end
-      maven_args ||= []
-      if options[ :pom ]
-        maven_args << '--pom'
-        maven_args << options[ :pom ]
-      end
-      maven_args
-    end
-  end
-
-  desc "[run]", "runs jetty with either rails filesystem layout or with config.ru"
-  method_option :environment, :aliases => '-e', :type => :string, :required => false, :desc => 'rails environment (no effect on rackup setups)'
-  method_option :port, :type => :numeric, :default => 8080, :desc => 'http port'
-  method_option :sslport, :type => :numeric, :default => 8443, :desc => 'https port'
-  method_option :pom, :type => :string, :default => '.jetty-pom.xml', :desc => 'name of pom file which get generated (jetty-run just generates a pom.xml which gets execued by maven)'
-  def server(*args)
-    maven_args = self.maven_args
-    maven_args << "-Drails.env=#{options[:environment]}" if options[:environment]
-    maven_args << "-Djetty.port=#{options[:port]}"
-    maven_args << "-Djetty.sslport=#{options[:sslport]}"
-    exec(*(["jetty:run", "-Prun"] + maven_args))
-  end
-
-  desc "war WARFILE", "runs jetty with a given warfile"
-  method_option :port, :type => :numeric, :default => 8080, :desc => 'http port'
-  method_option :sslport, :type => :numeric, :default => 8443, :desc => 'https port'
-  def war(file, *args)
-    maven_args = self.maven_args
-    maven_args << "-Djetty.war=#{file}"
-    maven_args << "-Djetty.port=#{options[:port]}"
-    maven_args << "-Djetty.sslport=#{options[:sslport]}"
-    exec(*(["jetty:deploy-war", "-Pwar"] + maven_args))
-  end
-
-  desc "pom", "dump the jetty pom into pom.xml"
-  method_option :force, :type => :boolean, :default => false, :desc => 'force to overwrite pom.xml'
-  def pom(*args)
-    if File.exists?('pom.xml') && !options[:force]
-      warn "abort. pom.xml already exist. use --force to overwrite"
-    else
-      mvn.dump_pom(options[:force])
-    end
-  end
+if ARGV == [] || ARGV.all?{ |a| a.match( /^-/ ) }
+  ARGV.unshift 'default'
 end
-if i = ARGV.index('run')
-  ARGV[i] = 'server'
-end
-unless ARGV[0] =~ /^[a-z]/
-  ARGV.insert(0, 'server')
-end
-JettyCommand.start
+
+JettyRun::Cli.start
